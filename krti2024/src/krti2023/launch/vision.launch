@@ -1,0 +1,9 @@
+<launch>
+
+    <node name="vision" pkg="krti2023_pi" type="vision.py" args="" output="screen">
+        <rosparam>
+
+        </rosparam>
+    </node>
+    
+</launch>

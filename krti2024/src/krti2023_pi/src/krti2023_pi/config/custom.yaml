@@ -1,0 +1,11 @@
+setpoint_position:
+  # tf:
+  #   listen: false           # enable tf listener (disable topic subscribers)
+  #   frame_id: "map"
+  #   child_frame_id: "target_position"
+  #   rate_limit: 50.0
+  mav_frame: LOCAL_OFFSET_NED  
+
+# setpoint_velocity
+setpoint_velocity:
+  mav_frame: BODY_NED

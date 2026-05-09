@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <arg name="pola" default="1"/>
+    <arg name="target" default="1"/>
+
+    <include file="$(find krti2022)/launch/spawn_target.launch">
+        <arg name="x" value="8.75" if="$(eval target==3 or target==4)"/>
+        <arg name="y" value="-0.25" if="$(eval target==2 or target ==4)"/>
+        <arg name="target" value="$(arg target)"/>
+    </include>
+
+    <group if="$(eval pola == 1)">    
+        <include file="$(find krti2022)/launch/spawn_qr_gedungA.launch">
+            <arg name="model" value="vtol1"/>
+        </include>
+        <include file="$(find krti2022)/launch/spawn_qr_gedungB.launch">
+            <arg name="model" value="vtol2"/>
+        </include>
+        <include file="$(find krti2022)/launch/spawn_qr_gedungC.launch">
+            <arg name="model" value="vtol3"/>
+        </include>
+    </group>
+
+    <group if="$(eval arg('pola')==2)">    
+        <include file="$(find krti2022)/launch/spawn_qr_gedungA.launch">
+            <arg name="model" value="vtol1"/>
+        </include>
+        <include file="$(find krti2022)/launch/spawn_qr_gedungB.launch">
+            <arg name="model" value="vtol3"/>
+        </include>
+        <include file="$(find krti2022)/launch/spawn_qr_gedungC.launch">
+            <arg name="model" value="vtol2"/>
+        </include>
+    </group>
+
+    <group if="$(eval arg('pola')==3)">    
+        <include file="$(find krti2022)/launch/spawn_qr_gedungA.launch">
+            <arg name="model" value="vtol2"/>
+        </include>
+        <include file="$(find krti2022)/launch/spawn_qr_gedungB.launch">
+            <arg name="model" value="vtol1"/>
+        </include>
+        <include file="$(find krti2022)/launch/spawn_qr_gedungC.launch">
+            <arg name="model" value="vtol3"/>
+        </include>
+    </group>
+    <group if="$(eval arg('pola')==4)">    
+        <include file="$(find krti2022)/launch/spawn_qr_gedungA.launch">
+            <arg name="model" value="vtol2"/>
+        </include>
+        <include file="$(find krti2022)/launch/spawn_qr_gedungB.launch">
+            <arg name="model" value="vtol3"/>
+        </include>
+        <include file="$(find krti2022)/launch/spawn_qr_gedungC.launch">
+            <arg name="model" value="vtol1"/>
+        </include>
+    </group>
+    <group if="$(eval arg('pola')==5)">    
+        <include file="$(find krti2022)/launch/spawn_qr_gedungA.launch">
+            <arg name="model" value="vtol3"/>
+        </include>
+        <include file="$(find krti2022)/launch/spawn_qr_gedungB.launch">
+            <arg name="model" value="vtol2"/>
+        </include>
+        <include file="$(find krti2022)/launch/spawn_qr_gedungC.launch">
+            <arg name="model" value="vtol2"/>
+        </include>
+    </group>
+    <group if="$(eval arg('pola')==6)">    
+        <include file="$(find krti2022)/launch/spawn_qr_gedungA.launch">
+            <arg name="model" value="vtol3"/>
+        </include>
+        <include file="$(find krti2022)/launch/spawn_qr_gedungB.launch">
+            <arg name="model" value="vtol2"/>
+        </include>
+        <include file="$(find krti2022)/launch/spawn_qr_gedungC.launch">
+            <arg name="model" value="vtol1"/>
+        </include>
+    </group>
+
+
+
+
+</launch>

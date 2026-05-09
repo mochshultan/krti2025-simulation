@@ -1,0 +1,28 @@
+<launch>
+    <node name="sensors" pkg="krti2022" type="sensors.py" args="" output="screen">
+        <rosparam>
+            verbose: true
+            front_camera_index: 0
+            down_camera_index: 1
+        </rosparam>
+    </node>
+
+    <node name="vision" pkg="krti2022" type="vision.py" args="" output="screen">
+        <rosparam>
+            show_img: true
+            verbose: true
+            elp_lower_hsv: [20, 100, 100]
+            elp_upper_hsv: [50, 200, 200]
+            target_lower_hsv: [0, 0, 100]
+            target_upper_hsv: [0, 0, 255]
+            front_fov_x: 78
+            front_fov_y: 78
+            down_fov_x: 78
+            down_fov_y: 78
+            use_hough_circle: True
+        </rosparam>
+    </node>
+    <!-- <include file="$(find krti2022)/launch/vision.launch"/> -->
+    <node name="tes_main" pkg="krti2022" type="tes_main.py" args="" output="screen"/>
+    
+</launch>

@@ -1,0 +1,5 @@
+.vscode
+*.pyc
+obstacle*.py
+**obstacle*
+build

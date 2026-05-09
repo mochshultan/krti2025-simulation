@@ -1,0 +1,132 @@
+<launch>
+  <!--
+    KRti2025 real-drone bringup from companion PC.
+
+    Real mode expects the FCU on serial, a D435/D435i ROS driver, and a
+    calibrated VINS config. Simulation uses sim.launch instead.
+  -->
+
+  <arg name="fcu_url" default="/dev/ttyACM0:921600"/>
+  <arg name="gcs_url" default="udp://@192.168.0.100:14550"/>
+  <arg name="use_vins" default="true"/>
+  <arg name="use_loop_fusion" default="false"/>
+  <arg name="use_vision_feedback" default="true"/>
+  <arg name="use_mission" default="false"/>
+  <arg name="use_rviz" default="false"/>
+  <arg name="vins_config" default="$(find vins)/../config/krti2025/krti_vins_config.yaml"/>
+
+  <node pkg="mavros" type="mavros_node" name="mavros"
+        clear_params="true" output="screen" respawn="true" respawn_delay="5">
+    <param name="fcu_url" value="$(arg fcu_url)"/>
+    <param name="gcs_url" value="$(arg gcs_url)"/>
+    <param name="target_system_id" value="1"/>
+    <param name="target_component_id" value="1"/>
+    <param name="fcu_protocol" value="v2.0"/>
+    <rosparam command="load" file="$(find krti2025_bringup)/config/apm_pluginlists_vio.yaml"/>
+    <rosparam command="load" file="$(find mavros)/launch/apm_config.yaml"/>
+    <rosparam command="load" file="$(find krti2025_pi)/src/krti2023_pi/config/custom.yaml"/>
+  </node>
+
+  <node pkg="tf2_ros" type="static_transform_publisher" name="map_odom_tf"
+        args="0 0 0 0 0 0 map odom"/>
+
+  <group if="$(arg use_vins)">
+    <node pkg="vins" type="vins_node" name="vins_estimator"
+          args="$(arg vins_config)"
+          output="screen" respawn="true" respawn_delay="5"/>
+
+    <node if="$(arg use_loop_fusion)"
+          pkg="loop_fusion" type="loop_fusion_node" name="loop_fusion"
+          args="$(arg vins_config)"
+          output="screen" respawn="true" respawn_delay="5"/>
+
+    <node pkg="topic_tools" type="relay" name="vins_to_ego_odom"
+          args="/vins_estimator/odometry /drone_0_visual_slam/odom"/>
+
+    <node if="$(arg use_vision_feedback)"
+          pkg="krti2025_pi" type="vins_to_mavros.py" name="vins_to_mavros"
+          output="screen" respawn="true" respawn_delay="2">
+      <param name="odom_topic" value="/vins_estimator/odometry"/>
+      <param name="pose_topic" value="/mavros/vision_pose/pose"/>
+      <param name="speed_topic" value="/mavros/vision_speed/speed_twist"/>
+      <param name="publish_speed" value="true"/>
+      <param name="frame_id" value="map"/>
+      <param name="child_frame_id" value="base_link"/>
+    </node>
+  </group>
+
+  <group unless="$(arg use_vins)">
+    <node pkg="topic_tools" type="relay" name="mavros_to_ego_odom"
+          args="/mavros/local_position/odom /drone_0_visual_slam/odom"/>
+  </group>
+
+  <arg name="odom_topic" value="drone_0_visual_slam/odom"/>
+  <arg name="depth_topic" value="camera/depth/image_rect_raw"/>
+  <arg name="cloud_topic" value="camera/depth/color/points"/>
+  <arg name="camera_pose_topic" value="camera/depth/pose"/>
+
+  <include file="$(find ego_planner)/launch/advanced_param.xml">
+    <arg name="drone_id" value="0"/>
+    <arg name="topic_prefix" value="/"/>
+    <arg name="pose_type" value="2"/>
+    <arg name="map_size_x_" value="30.0"/>
+    <arg name="map_size_y_" value="30.0"/>
+    <arg name="map_size_z_" value="5.0"/>
+    <arg name="odometry_topic" value="$(arg odom_topic)"/>
+    <arg name="depth_topic" value="$(arg depth_topic)"/>
+    <arg name="camera_pose_topic" value="$(arg camera_pose_topic)"/>
+    <arg name="cloud_topic" value="$(arg cloud_topic)"/>
+    <arg name="cx" value="320.0"/>
+    <arg name="cy" value="240.0"/>
+    <arg name="fx" value="387.229"/>
+    <arg name="fy" value="387.229"/>
+    <arg name="max_vel" value="1.0"/>
+    <arg name="max_acc" value="1.5"/>
+    <arg name="planning_horizon" value="5.0"/>
+    <arg name="flight_type" value="1"/>
+    <arg name="point_num" value="1"/>
+    <arg name="point0_x" value="3.5"/>
+    <arg name="point0_y" value="0.0"/>
+    <arg name="point0_z" value="1.2"/>
+    <arg name="point1_x" value="0.0"/>
+    <arg name="point1_y" value="0.0"/>
+    <arg name="point1_z" value="1.2"/>
+    <arg name="point2_x" value="0.0"/>
+    <arg name="point2_y" value="0.0"/>
+    <arg name="point2_z" value="1.2"/>
+    <arg name="point3_x" value="0.0"/>
+    <arg name="point3_y" value="0.0"/>
+    <arg name="point3_z" value="1.2"/>
+    <arg name="point4_x" value="0.0"/>
+    <arg name="point4_y" value="0.0"/>
+    <arg name="point4_z" value="1.2"/>
+    <arg name="use_distinctive_trajs" value="true"/>
+    <arg name="obj_num_set" value="10"/>
+  </include>
+
+  <node pkg="ego_planner" name="traj_server" type="traj_server" output="screen">
+    <remap from="/position_cmd" to="/drone_0_planning/pos_cmd"/>
+    <remap from="/odom_world" to="/$(arg odom_topic)"/>
+    <remap from="~planning/bspline" to="/drone_0_planning/bspline"/>
+    <param name="traj_server/time_forward" value="1.0" type="double"/>
+  </node>
+
+  <node pkg="waypoint_generator" name="waypoint_generator"
+        type="waypoint_generator" output="screen">
+    <remap from="~odom" to="/$(arg odom_topic)"/>
+    <remap from="~goal" to="/move_base_simple/goal"/>
+    <remap from="~traj_start_trigger" to="/traj_start_trigger"/>
+    <param name="waypoint_type" value="manual-lonely-waypoint"/>
+  </node>
+
+  <node if="$(arg use_mission)"
+        pkg="krti2025_pi" type="main.py" name="main_node"
+        output="screen" launch-prefix="python3">
+    <param name="use_sim" value="false"/>
+  </node>
+
+  <node if="$(arg use_rviz)"
+        pkg="rviz" type="rviz" name="rviz"
+        args="-d $(find krti2025_pi)/rviz/ego_planner.rviz"
+        output="log" required="false"/>
+</launch>

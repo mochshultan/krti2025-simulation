@@ -1,0 +1,6 @@
+[submodule "src/krti2024_pi"]
+	path = src/krti2024_pi
+	url = https://github.com/Akasasura/drone_api
+[submodule "tools"]
+	path = tools
+	url = https://github.com/Akasasura/Tools

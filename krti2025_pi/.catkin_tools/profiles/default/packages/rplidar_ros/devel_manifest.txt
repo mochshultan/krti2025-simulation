@@ -1,0 +1,7 @@
+RPLidar/rplidar_ros
+/home/krti2024_pi/devel/.private/rplidar_ros/cmake.lock /home/krti2024_pi/devel/./cmake.lock
+/home/krti2024_pi/devel/.private/rplidar_ros/lib/pkgconfig/rplidar_ros.pc /home/krti2024_pi/devel/lib/pkgconfig/rplidar_ros.pc
+/home/krti2024_pi/devel/.private/rplidar_ros/lib/rplidar_ros/rplidarNode /home/krti2024_pi/devel/lib/rplidar_ros/rplidarNode
+/home/krti2024_pi/devel/.private/rplidar_ros/lib/rplidar_ros/rplidarNodeClient /home/krti2024_pi/devel/lib/rplidar_ros/rplidarNodeClient
+/home/krti2024_pi/devel/.private/rplidar_ros/share/rplidar_ros/cmake/rplidar_rosConfig-version.cmake /home/krti2024_pi/devel/share/rplidar_ros/cmake/rplidar_rosConfig-version.cmake
+/home/krti2024_pi/devel/.private/rplidar_ros/share/rplidar_ros/cmake/rplidar_rosConfig.cmake /home/krti2024_pi/devel/share/rplidar_ros/cmake/rplidar_rosConfig.cmake

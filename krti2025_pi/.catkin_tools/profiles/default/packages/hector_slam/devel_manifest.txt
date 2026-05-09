@@ -1,0 +1,2 @@
+RPLidar/hector_slam/hector_slam
+/home/krti2024_pi/devel/.private/hector_slam/cmake.lock /home/krti2024_pi/devel/./cmake.lock

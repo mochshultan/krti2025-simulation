@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<launch>
+
+    <!-- <arg name="front_fov_x" default="78"/>
+    <arg name="front_fov_y" default="78"/>
+    <arg name="down_fov_x" default="78"/>
+    <arg name="down_fov_y" default="78"/> -->
+    <node name="vision" pkg="krti2022" type="vision.py" args="" output="screen">
+        <rosparam>
+            use_sim: true
+            show_img: true
+            verbose: true
+            front_camera_index: 0
+            down_camera_index: 1
+            elp_lower_hsv: [20, 100, 100]
+            elp_upper_hsv: [50, 200, 200]
+            target_lower_hsv: [0, 0, 100]
+            target_upper_hsv: [0, 0, 255]
+            front_fov_x: 78
+            front_fov_y: 78
+            down_fov_x: 78
+            down_fov_y: 78
+            use_hough_circle: True
+        </rosparam>
+    </node>
+
+</launch>

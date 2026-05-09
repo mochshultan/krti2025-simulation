@@ -1,0 +1,24 @@
+<launch>
+
+    <node name="vision" pkg="krti2023_pi" type="vision.py" args="" output="screen">
+        <rosparam>
+            <!-- for simulation, set to true -->
+            use_sim: true
+            verbose: true
+            
+            <!-- HSV values for target detection -->
+            target_lower_hsv: [0, 100, 100]
+            target_upper_hsv: [20, 255, 255]
+            
+            target2_lower_hsv: [0, 255, 94]
+            target2_upper_hsv: [0, 255, 255]
+            
+            <!-- Camera FOV parameters -->
+            front_fov_x: 78
+            front_fov_y: 78
+            down_fov_x: 78
+            down_fov_y: 78
+        </rosparam>
+    </node>
+    
+</launch>

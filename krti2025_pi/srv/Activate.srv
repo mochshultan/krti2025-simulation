@@ -1,0 +1,8 @@
+# this .srv needed for 
+
+# activating target detection under '/vision/activate/target'
+
+bool data
+uint8 target
+---
+bool result 

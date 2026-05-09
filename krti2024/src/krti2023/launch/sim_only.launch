@@ -1,0 +1,28 @@
+<launch>
+	<!-- Experimental launch script for APM based Drone -->
+	<arg name="mission" default="main"/>
+
+	<!-- Start mavros -->
+	<!-- <arg name="use_sim" default="true"/> -->
+	<include file="$(find krti2023)/launch/mavros_only.launch"/>
+	<!-- <rosparam param="use_sim" subst_value="true">$(arg use_sim)</rosparam> -->
+	
+	<!-- Start gazebo -->
+	<include file="$(find krti2023)/launch/gazebo_only.launch">
+	</include>
+    
+    <!-- Start sensor node -->
+	<include file="$(find krti2023)/launch/sensors.launch">
+	</include>
+
+    <!-- Start vision node -->
+	<!-- <include file="$(find krti2023)/launch/vision.launch">
+	</include> -->
+	
+	<!-- Start main program for mission / testing -->
+	<include file="$(find krti2023)/launch/$(arg mission).launch">
+		<arg name="filename" default="main.py"/>
+	</include>
+
+</launch>
+    

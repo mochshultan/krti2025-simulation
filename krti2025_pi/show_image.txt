@@ -1,0 +1,22 @@
+Connect camera stream to other device using ROS
+
+Raspi
+1. nano ~/.bashrc
+2. export ROS_MASTER_URI=http://192.168.0.102:11311
+3. export ROS_IP=192.168.0.102
+
+On Other Device
+1. gedit ~/.bashrc
+2. ROS_MASTER_URI=http://192.168.0.102:11311
+3. ROS_IP=192.168.0.103
+4. sudo gedit /etc/hosts
+5. add raspi ip and usernam -> 192.168.0.102   krti2024
+6. don't forget to save both file
+7. source devel/setup.bash
+8. change the package name that like Raspi's package name   ex: krti2024_pi
+9. catkin build
+10. source devel/setup.bash
+11. check in rostopic list
+12. check in rostopic bw /camera/down/image
+13. rqt
+14. BOOM UR WILL STREAMS 🤟

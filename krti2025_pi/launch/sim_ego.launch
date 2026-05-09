@@ -1,0 +1,49 @@
+<launch>
+
+  <!-- ═══════════════════════════════════════════════════════
+       sim_ego.launch
+       Jalankan semua sekaligus:
+         1. Gazebo  → tampilan 3D arena + drone
+         2. MAVROS  → komunikasi ke ArduPilot SITL
+         3. RViz    → visualisasi trajectory EGO-Planner
+         4. main.py → program misi coba_gazebo1()
+       ═══════════════════════════════════════════════════════ -->
+
+  <!-- ── 1. Gazebo dengan arena_2023.world ── -->
+  <env name="GAZEBO_MODEL_PATH"
+       value="$(find krti2023)/models:$(optenv GAZEBO_MODEL_PATH)"/>
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find krti2023)/worlds/arena_2023.world"/>
+    <arg name="gui"        value="true"/>
+    <arg name="verbose"    value="false"/>
+    <arg name="paused"     value="false"/>
+  </include>
+
+  <!-- ── 2. MAVROS ── -->
+  <arg name="fcu_url" default="udp://:14551@localhost:14555"/>
+  <node pkg="mavros" type="mavros_node" name="mavros"
+        clear_params="true" output="screen" respawn="true">
+    <param name="fcu_url"              value="$(arg fcu_url)"/>
+    <param name="gcs_url"              value=""/>
+    <param name="target_system_id"     value="1"/>
+    <param name="target_component_id"  value="1"/>
+    <param name="fcu_protocol"         value="v2.0"/>
+    <rosparam command="load" file="$(find mavros)/launch/apm_pluginlists.yaml"/>
+    <rosparam command="load" file="$(find mavros)/launch/apm_config.yaml"/>
+  </node>
+
+  <!-- ── 3. RViz visualisasi trajectory ── -->
+  <node pkg="rviz" type="rviz" name="rviz"
+        args="-d $(find krti2024_pi)/launch/ego_viz.rviz"
+        output="screen" required="false"/>
+
+  <!-- ── 4. Publisher path EGO-Planner untuk RViz ── -->
+  <node pkg="krti2024_pi" type="ego_path_viz.py" name="ego_path_viz"
+        output="screen"/>
+
+  <!-- ── 5. Main mission ── -->
+  <param name="/vision/use_sim" value="true"/>
+  <node pkg="krti2024_pi" type="main.py" name="main_node"
+        output="screen" launch-prefix="python3"/>
+
+</launch>

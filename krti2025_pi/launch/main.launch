@@ -1,0 +1,9 @@
+<launch>
+    <!-- <param name="/vision/use_sim" value="true" /> Add this line to set the parameter -->
+    <node name="main" pkg="krti2024_pi" type="main.py" output="screen" launch-prefix="python3 ">
+        <!-- <rosparam>
+        </rosparam> -->
+    </node>
+    <node name="us_publisher" pkg="rosserial_python" type="serial_node.py"/>
+
+</launch>

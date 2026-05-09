@@ -1,0 +1,14 @@
+For the first mavros and main, suggested to doing this every open new terminal
+1. ./set_stream.sh
+2. rostopic echo /mavros/local_postition/pose
+
+tidak muncul data? 
+
+A. open new terminal
+B. repeat step 1 & 2
+
+always connecting? 
+A. reboot pixhawk
+B. repeat step 1 & 2
+
+NOTE: DoN't PAniC Bruh 🤟

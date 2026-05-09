@@ -1,0 +1,8 @@
+<launch>
+    <arg name="filename" default="main.py"/>
+    <param name="/vision/use_sim" value="true" /> <!-- Add this line to set the parameter -->
+    <node name="main" pkg="krti2023_pi" type="$(arg filename)" args="" output="screen">
+        <rosparam>
+        </rosparam>
+    </node>
+</launch>

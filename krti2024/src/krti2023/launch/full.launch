@@ -1,0 +1,72 @@
+<launch>
+	<!-- vim: set ft=xml noet : -->
+	<!-- Experimental launch script for APM based Drone -->
+
+	<!-- Start mavros -->
+	<arg name="use_sim" default="false"/>
+	<include file="$(find krti2023)/launch/mavros_only.launch"/>
+	<rosparam param="use_sim" subst_value="true">$(arg use_sim)</rosparam>
+	
+	<!-- Start gazebo (simulasi saja) -->
+	<!-- <arg name="pola" default="1"/>
+  	<arg name="target" default="1"/> -->
+	<include file="$(find krti2023)/launch/gazebo_only.launch" if="$(arg use_sim)">
+		<!-- <arg name="target" value="$(arg target)"/>
+      	<arg name="pola" value="$(arg pola)"/> -->
+	</include>
+	<!-- <include file="$(find krti2023)/launch/vision.launch"/> -->
+
+	<!-- EGO Planner -->
+	<arg name="odom_topic" value="/mavros/local_position/odom"/>
+	<include file="$(find ego_planner)/launch/advanced_param.xml">
+		<arg name="map_size_x_"       value="20.0"/>
+		<arg name="map_size_y_"       value="20.0"/>
+		<arg name="map_size_z_"       value="3.0"/>
+		<arg name="odometry_topic"    value="$(arg odom_topic)"/>
+		<arg name="depth_topic"       value="/iris/iris/front_camera/depth/image_raw"/>
+		<arg name="camera_pose_topic" value="/ego_planner/camera_pose"/>
+		<arg name="cloud_topic"       value="/iris/iris/front_camera/points"/>
+		<arg name="cx"                value="160.5"/>
+		<arg name="cy"                value="120.5"/>
+		<arg name="fx"                value="277.19135641132203"/>
+		<arg name="fy"                value="277.19135641132203"/>
+		<arg name="max_vel"           value="0.5"/>
+		<arg name="max_acc"           value="1.0"/>
+		<arg name="planning_horizon"  value="5.0"/>
+		<arg name="flight_type"       value="1"/>
+		<arg name="point_num"         value="1"/>
+		<arg name="point0_x"          value="0.0"/>
+		<arg name="point0_y"          value="0.0"/>
+		<arg name="point0_z"          value="1.3"/>
+		<arg name="point1_x"          value="0.0"/>
+		<arg name="point1_y"          value="0.0"/>
+		<arg name="point1_z"          value="1.3"/>
+		<arg name="point2_x"          value="0.0"/>
+		<arg name="point2_y"          value="0.0"/>
+		<arg name="point2_z"          value="1.3"/>
+		<arg name="point3_x"          value="0.0"/>
+		<arg name="point3_y"          value="0.0"/>
+		<arg name="point3_z"          value="1.3"/>
+		<arg name="point4_x"          value="0.0"/>
+		<arg name="point4_y"          value="0.0"/>
+		<arg name="point4_z"          value="1.3"/>
+	</include>
+	<node pkg="ego_planner" name="traj_server" type="traj_server" output="screen">
+		<remap from="/position_cmd" to="/planning/pos_cmd"/>
+		<remap from="/odom_world"   to="$(arg odom_topic)"/>
+		<param name="traj_server/time_forward" value="1.0" type="double"/>
+	</node>
+	<node pkg="waypoint_generator" name="waypoint_generator" type="waypoint_generator" output="screen">
+		<remap from="~odom"               to="$(arg odom_topic)"/>
+		<remap from="~goal"               to="/move_base_simple/goal"/>
+		<remap from="~traj_start_trigger" to="/traj_start_trigger"/>
+		<param name="waypoint_type" value="manual-lonely-waypoint"/>
+	</node>
+	<node pkg="topic_tools" name="cam_pose_relay" type="relay"
+	      args="/mavros/local_position/pose /ego_planner/camera_pose"/>
+	<node pkg="tf2_ros" name="map_odom_tf" type="static_transform_publisher"
+	      args="0 0 0 0 0 0 map odom"/>
+	<node pkg="rviz" name="rviz" type="rviz" output="screen"
+	      args="-d $(find krti2024_pi)/rviz/ego_planner.rviz" if="$(arg use_sim)"/>
+
+</launch>

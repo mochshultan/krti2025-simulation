@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <arg name="target" default="1"/>
+    <arg name="x" default="9.25"/>
+    <arg name="y" default="0.25"/>
+    <arg name="z" default="1.0006"/>
+    <arg name="R" default="0"/>
+    <arg name="P" default="0"/>
+    <arg name="Y" default="0"/>    
+    <arg name="model" default="target_B"/>
+
+	<node name="spawn_target" pkg="gazebo_ros" type="spawn_model" output="screen"
+		args="-sdf -file $(find krti2022)/models/target_B/model.sdf 
+		-model $(arg model)7 
+		-x $(arg x) -y $(arg y) -z $(arg z) -P $(arg P)"/>
+
+</launch>

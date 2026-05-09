@@ -1,0 +1,3 @@
+[submodule "src/krti2023"]
+	path = src/krti2023
+	url = https://github.com/Mettikodeva/drone_api

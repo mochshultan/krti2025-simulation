@@ -1,0 +1,90 @@
+<launch>
+  <!-- Main simulation bringup for KRTI 2025 -->
+  <arg name="drone_id" default="0"/>
+  
+  <!-- Environment Variables for Gazebo -->
+  <env name="GAZEBO_MODEL_PATH" value="$(env GAZEBO_MODEL_PATH):$(find krti2023)/models"/>
+  <env name="GAZEBO_RESOURCE_PATH" value="$(env GAZEBO_RESOURCE_PATH):$(find krti2023)/models"/>
+
+  <!-- 1. Gazebo Only (Arena) -->
+  <include file="$(find krti2023)/launch/gazebo_only.launch">
+  </include>
+
+  <!-- 2. MAVROS Only (Connection to SITL) -->
+  <include file="$(find krti2023)/launch/mavros_only.launch"/>
+
+  <!-- 3. Static TF Hierarchy (Root: world) -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="world_to_map" args="0 0 0 0 0 0 world map"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_odom" args="0 0 0 0 0 0 map odom"/>
+  <!-- Camera link TF based on drone/model.sdf joint pose -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_camera" args="0.1 0 0.05 0 0 0 base_link depth_camera_link"/>
+
+  <!-- 4. VINS-Fusion (VIO) -->
+  <group ns="vins_estimator">
+    <node pkg="vins" type="vins_node" name="vins_estimator" output="screen">
+      <param name="config_file" value="$(find vins)/../config/krti2025/krti_vins_config.yaml"/>
+      <param name="vins_folder" value="$(find vins)/../config/krti2025/"/>
+    </node>
+    <!-- Bridge VINS to MAVROS -->
+    <node pkg="krti2024_pi" type="vins_to_mavros.py" name="vins_bridge" output="screen">
+      <param name="odom_topic" value="/vins_estimator/odometry"/>
+      <param name="frame_id" value="world"/>
+    </node>
+  </group>
+
+  <!-- 5. EGO Planner Swarm -->
+  <arg name="odom_topic" value="/mavros/local_position/odom"/>
+  <arg name="depth_topic" value="/iris/front_camera/depth/image_raw"/>
+  <arg name="cloud_topic" value="/iris/front_camera/depth/points"/>
+  <arg name="camera_pose_topic" value="/iris/front_camera/depth/pose"/>
+  
+  <include file="$(find ego_planner)/launch/advanced_param.xml">
+    <arg name="map_size_x_" value="40.0"/>
+    <arg name="map_size_y_" value="40.0"/>
+    <arg name="map_size_z_" value="10.0"/>
+    <arg name="drone_id" value="$(arg drone_id)"/>
+    <arg name="topic_prefix" value=""/> <!-- No prefix, use global remapping -->
+    
+    <arg name="odometry_topic" value="$(arg odom_topic)"/>
+    <arg name="depth_topic" value="$(arg depth_topic)"/>
+    <arg name="cloud_topic" value="$(arg cloud_topic)"/>
+    <arg name="camera_pose_topic" value="$(arg camera_pose_topic)"/>
+    
+    <arg name="cx" value="160.0"/>
+    <arg name="cy" value="120.0"/>
+    <arg name="fx" value="387.229"/>
+    <arg name="fy" value="387.229"/>
+    
+    <arg name="max_vel" value="1.0"/>
+    <arg name="max_acc" value="1.5"/>
+    <arg name="planning_horizon" value="7.5"/>
+    <arg name="flight_type" value="1"/> <!-- 1: Manual Goal via /move_base_simple/goal -->
+    <arg name="use_distinctive_trajs" value="false"/>
+    <arg name="point_num" value="1"/>
+    <arg name="point0_x" value="0.0"/>
+    <arg name="point0_y" value="0.0"/>
+    <arg name="point0_z" value="0.0"/>
+    <arg name="point1_x" value="0.0"/>
+    <arg name="point1_y" value="0.0"/>
+    <arg name="point1_z" value="0.0"/>
+    <arg name="point2_x" value="0.0"/>
+    <arg name="point2_y" value="0.0"/>
+    <arg name="point2_z" value="0.0"/>
+    <arg name="point3_x" value="0.0"/>
+    <arg name="point3_y" value="0.0"/>
+    <arg name="point3_z" value="0.0"/>
+    <arg name="point4_x" value="0.0"/>
+    <arg name="point4_y" value="0.0"/>
+    <arg name="point4_z" value="0.0"/>
+    <arg name="obj_num_set" value="1"/>
+  </include>
+
+  <!-- 6. Trajectory Server (Execution Bridge) -->
+  <node pkg="ego_planner" name="drone_$(arg drone_id)_traj_server" type="traj_server" output="screen">
+    <remap from="/odom_world" to="$(arg odom_topic)"/>
+    <remap from="~planning/bspline" to="/drone_$(arg drone_id)_planning/bspline"/>
+    <remap from="/position_cmd" to="/drone_$(arg drone_id)_planning/pos_cmd"/>
+    <param name="traj_server/time_forward" value="1.0" type="double"/>
+  </node>
+
+</launch>

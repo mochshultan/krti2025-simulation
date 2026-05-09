@@ -1,0 +1,37 @@
+<?xml version="1.0" ?>
+<sdf version="1.7">
+  <model name="jendela11">
+    <pose>0 0 0  0 0 0</pose>
+    <static>true</static>
+    <link name="link">
+      <inertial>
+        <mass>0.00001</mass>
+        <inertia> 
+          <ixx>1</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>1</iyy>
+          <iyz>0</iyz>
+          <izz>1</izz>
+        </inertia>
+      </inertial>
+
+      <collision name="collision">
+        <geometry>
+          <size>1 1 1</size>
+          <mesh>
+            <uri>model://jendela/meshes/jendela1_1m.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <size>1 1 1</size>
+          <mesh>
+            <uri>model://jendela/meshes/jendela1_1m.dae</uri>
+          </mesh>
+	      </geometry>
+      </visual>
+    </link>
+  </model>
+</sdf>

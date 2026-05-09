@@ -1,0 +1,6 @@
+RPLidar/hector_slam/hector_geotiff_plugins
+/home/krti2024_pi/devel/.private/hector_geotiff_plugins/cmake.lock /home/krti2024_pi/devel/./cmake.lock
+/home/krti2024_pi/devel/.private/hector_geotiff_plugins/lib/libhector_geotiff_plugins.so /home/krti2024_pi/devel/lib/libhector_geotiff_plugins.so
+/home/krti2024_pi/devel/.private/hector_geotiff_plugins/lib/pkgconfig/hector_geotiff_plugins.pc /home/krti2024_pi/devel/lib/pkgconfig/hector_geotiff_plugins.pc
+/home/krti2024_pi/devel/.private/hector_geotiff_plugins/share/hector_geotiff_plugins/cmake/hector_geotiff_pluginsConfig-version.cmake /home/krti2024_pi/devel/share/hector_geotiff_plugins/cmake/hector_geotiff_pluginsConfig-version.cmake
+/home/krti2024_pi/devel/.private/hector_geotiff_plugins/share/hector_geotiff_plugins/cmake/hector_geotiff_pluginsConfig.cmake /home/krti2024_pi/devel/share/hector_geotiff_plugins/cmake/hector_geotiff_pluginsConfig.cmake

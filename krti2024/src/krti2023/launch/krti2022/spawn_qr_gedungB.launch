@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <arg name="x" default="8.495"/>
+    <arg name="y" default="0.395"/>
+    <arg name="z" default="0.895"/>
+    <arg name="R" default="-1.5707"/>
+    <arg name="P" default="-1.5707"/>
+    <arg name="Y" default="0"/>
+    <arg name="model" default="vtol2"/>
+	<node name="qrB" pkg="gazebo_ros" type="spawn_model" output="screen"
+		args="-sdf -file $(find krti2022)/models/$(arg model)/model.sdf 
+		-model $(arg model) 
+		-x $(arg x) -y $(arg y) -z $(arg z) -P $(arg P)"/>
+</launch>

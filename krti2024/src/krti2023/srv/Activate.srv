@@ -1,0 +1,8 @@
+# this .srv needed for 
+#activating QR code detection under '/vision/activate/qr' service
+# activating target detection under '/vision/activate/target'
+# activating elp detection under '/vision/activate/elp'
+
+bool data
+---
+bool result 

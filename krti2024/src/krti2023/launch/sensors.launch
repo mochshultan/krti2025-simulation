@@ -1,0 +1,12 @@
+<launch>
+    <rosparam>
+        SIM: true
+    </rosparam>
+	<node name="sensors" pkg="krti2023" type="sensors.py" args="" output="screen">
+        <rosparam>
+            MODE: info
+            F_CAM_INDEX: 0
+            D_CAM_INDEX: 1
+        </rosparam>
+    </node>
+</launch>

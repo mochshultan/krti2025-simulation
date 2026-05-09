@@ -1,0 +1,65 @@
+<launch>
+
+    <!-- Experimental launch script for APM based Drone -->
+	<!-- <arg name="mission" default="main"/>
+	<arg name="ROS_MASTER_IP" default="192.168.0.100"/> -->
+
+	<!-- set the env -->
+	<!-- <env name="ROS_MASTER_URI" value="http://$(arg ROS_MASTER_IP):11311"/>
+	<env name="ROS_IP" value=""/> set the ip of the machine -->
+
+	<!-- set the remote machine  -->
+	<!-- <machine name="drone" address="192.168.0.20" user="krti" password="krti2023" ros-root="/opt/ros/noetic" env-loader="/home/krti/krti_ws/src/krti2023_pi/scripts/env_loader.sh">
+		<env name="ROS_MASTER_URI" value="http://$(arg ROS_MASTER_IP):11311"/>
+	</machine> -->
+
+	<!-- Start mavros -->
+	<!-- vim: set ft=xml noet : -->
+	<!-- base node launch file-->
+
+	<!-- FCU URL format stolen from PX4's launch file -->
+	<!-- https://github.com/PX4/PX4-Autopilot/blob/master/launch/mavros_posix_sitl.launch#L25 -->
+	<!-- enable for Serial connection to pixhawk from raspberrypi using USB-->
+	<!-- <arg name="fcu_url" default="/dev/ttyUSB0" /> -->
+	<!-- enable for Serial connection to pixhawk from raspberrypi -->
+	<arg name="fcu_url" default="udp://:14551@localhost:14555" />
+	<!-- <arg name="fcu_url" default="/dev/ttyACM0" /> -->
+	<arg name="gcs_url" default="" />
+	<arg name="tgt_system" default="1" />
+	<arg name="tgt_component" default="1" />
+	<arg name="log_output" default="screen" />
+	<arg name="respawn_mavros" default="true"/>
+	<arg name="mavros_ns" default="/"/>
+	<arg name="config_yaml" default="$(find mavros)/launch/apm_config.yaml" />
+	<arg name="pluginlists_yaml" value="$(find mavros)/launch/apm_pluginlists.yaml" />
+	<arg name="custom" default="$(find krti2024_pi)/src/krti2024_pi/config/custom.yaml" />
+	<arg name="fcu_protocol" default="v2.0" />
+	
+	<node pkg="mavros" type="mavros_node" name="mavros" required="$(eval not respawn_mavros)" clear_params="true" output="$(arg log_output)" respawn="$(arg respawn_mavros)" ns="$(arg mavros_ns)">
+		<param name="fcu_url" value="$(arg fcu_url)" />
+		<param name="gcs_url" value="$(arg gcs_url)" />
+		<param name="target_system_id" value="$(arg tgt_system)" />
+		<param name="target_component_id" value="$(arg tgt_component)" />
+		<param name="fcu_protocol" value="$(arg fcu_protocol)" />
+
+		<!-- load blacklist, config -->
+		<rosparam command="load" file="$(arg pluginlists_yaml)" />
+		<rosparam command="load" file="$(arg config_yaml)" />
+		<rosparam command="load" file="$(arg custom)" />
+	</node>
+	
+    <node name="vision" pkg="krti2024_pi" type="vision.py" args="" output="screen">
+        <rosparam>
+			camera_index: 0
+            use_sim: false
+            verbose: true
+            target_lower_hsv: [8, 2, 7]
+            target_upper_hsv: [24, 255, 255]
+            target2_lower_hsv: [0, 255, 102]
+            target2_upper_hsv: [0, 255, 244]
+            down_fov_x: 78
+            down_fov_y: 78
+        </rosparam>
+    </node>
+	
+</launch>
