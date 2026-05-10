@@ -73,15 +73,31 @@ rqt
 | Komponen | Topik Utama | Tipe Pesan | Deskripsi |
 | :--- | :--- | :--- | :--- |
 | **Localization** | `/mavros/local_position/odom` | `nav_msgs/Odometry` | Umpan balik posisi (VIO-based) |
-| **Sensing** | `/ego_planner/depth_cloud_world` | `sensor_msgs/PointCloud2` | Awan titik dalam frame `world` (Global ESDF) |
+| **Sensing (Raw)** | `/iris/iris/front_camera/depth/points` | `sensor_msgs/PointCloud2` | Raw pointcloud dari Gazebo |
+| **Sensing (Global)** | `/ego_planner/depth_cloud_world` | `sensor_msgs/PointCloud2` | Pointcloud dalam frame `world` |
+| **Camera Pose** | `/camera_pose` | `geometry_msgs/PoseStamped` | Pose kamera untuk sinkronisasi planner |
 | **Planning** | `/planning/pos_cmd` | `quadrotor_msgs/PositionCommand` | Output jalur dari EGO Planner |
 | **Setpoint** | `/mavros/setpoint_raw/local` | `mavros_msgs/PositionTarget` | Perintah final ke Flight Controller |
 
 ### TF Coordinate Hierarchy
-*   **Root**: `world` → `map` → `odom` → `base_link`
-*   **Camera**: `base_link` → `depth_camera_link` (Static Offset: x=0.1, z=0.05)
+Sistem menggunakan koordinat Cartesian (ENU) dengan hirarki berikut:
+*   **world**: Frame referensi global (root Gazebo).
+*   **map**: Frame statis untuk navigasi otonom.
+*   **odom**: Frame odometri lokal dari EKF ArduPilot.
+*   **base_link**: Frame pusat massa drone (IMU).
+*   **depth_camera_link**: Frame sensor kamera (Offset: x=0.1, z=0.05).
 
-## 5. Catatan untuk Pengembangan Real Drone (WIP)
+**Chain**: `world` → `map` → `odom` → `base_link` → `depth_camera_link`
+
+## 5. Mission Logic & Behavior (FSM)
+Logika misi diatur oleh `main.py` yang berkomunikasi dengan `DroneAPI`. Status utama meliputi:
+1.  **Takeoff & Pre-Flight**: Drone naik ke ketinggian aman (Guided Mode).
+2.  **Navigation**: EGO-Planner memandu drone ke target area.
+3.  **Search & Detection**: Vision diaktifkan untuk mencari payload (DResult).
+4.  **Pickup/Drop Behavior**: Algoritma PID mengatur posisi presisi untuk *attach/detach* payload menggunakan `gazebo_ros_link_attacher`.
+5.  **Return/Land**: Kembali ke home atau mendarat setelah misi selesai.
+
+## 6. Catatan untuk Pengembangan Real Drone (WIP)
 > [!IMPORTANT]
 > Sistem ini sedang dikembangkan untuk transisi ke wahana asli (Real Drone). Perhatikan hal berikut:
 > *   **Localization**: Di real drone, pastikan pencahayaan cukup untuk VINS-Fusion agar tidak terjadi *tracking loss*.
