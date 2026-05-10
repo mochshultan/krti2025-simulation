@@ -363,10 +363,10 @@ class DroneAPI:
                     )
                     rospy.sleep(0.06)
             else:
-                segment_horizon = float(kwargs.get("segment_horizon_m", 2.2))
+                segment_horizon = float(kwargs.get("segment_horizon_m", 1.6))
                 segment_arrival = float(kwargs.get("segment_arrival_m", arrival_xy))
-                close_depth_m = float(kwargs.get("close_depth_m", 1.25))
-                min_segment_m = float(kwargs.get("min_segment_m", 0.85))
+                close_depth_m = float(kwargs.get("close_depth_m", 1.5))
+                min_segment_m = float(kwargs.get("min_segment_m", 0.65))
                 segment_timeout = float(kwargs.get("segment_timeout", 75.0))
                 stale_cmd_s = float(kwargs.get("stale_cmd_s", 1.35))
                 republish_gap_s = float(kwargs.get("republish_gap_s", 2.5))

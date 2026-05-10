@@ -64,17 +64,17 @@ rqt
 
 ### B. Perencanaan Jalur (Navigation Pipeline)
 1.  **Goal Setting**: `DroneAPI` mengirimkan target posisi ke topik `/move_base_simple/goal` (Type: `geometry_msgs/PoseStamped`).
-2.  **Obstacle Sensing**: EGO-Planner menerima data `depth/points` dari Gazebo untuk membangun *ESDF Map* secara lokal.
-3.  **Optimization**: Planner menghitung jalur optimal berbasis B-Spline yang menghindari rintangan dan mempublikasikannya ke `/drone_0_planning/pos_cmd`.
-4.  **Control Loop**: `DroneAPI` menangkap `pos_cmd`, menghitung **Yaw-to-Velocity** (Face Forward), dan mengirimkan perintah `PositionTarget` ke MAVROS `/mavros/setpoint_raw/local`.
+2.  **Sensing Transformation**: Node `depth_cloud_to_world.py` menangkap data `depth/points`, melakukan transformasi koordinat ke frame `world` menggunakan TF Buffer, dan mengirimkannya ke `/ego_planner/depth_cloud_world`.
+3.  **Optimization**: EGO-Planner menerima data awan titik global tersebut untuk membangun *ESDF Map* dan menghitung jalur optimal berbasis B-Spline. Jalur dipublikasikan ke `/planning/pos_cmd`.
+4.  **Execution Logic**: `DroneAPI` menangkap `pos_cmd` dan menerapkan logika **Segmented Navigation** (memecah jalur panjang menjadi segmen pendek) untuk stabilitas di koridor sempit sebelum mengirim perintah final ke MAVROS `/mavros/setpoint_raw/local`.
 
 ## 4. Protokol Komunikasi & TF Tree
 
 | Komponen | Topik Utama | Tipe Pesan | Deskripsi |
 | :--- | :--- | :--- | :--- |
 | **Localization** | `/mavros/local_position/odom` | `nav_msgs/Odometry` | Umpan balik posisi (VIO-based) |
-| **Sensing** | `/iris/front_camera/depth/points` | `sensor_msgs/PointCloud2` | Data awan titik untuk deteksi rintangan |
-| **Planning** | `/drone_0_planning/pos_cmd` | `quadrotor_msgs/PositionCommand` | Output jalur dari EGO Planner |
+| **Sensing** | `/ego_planner/depth_cloud_world` | `sensor_msgs/PointCloud2` | Awan titik dalam frame `world` (Global ESDF) |
+| **Planning** | `/planning/pos_cmd` | `quadrotor_msgs/PositionCommand` | Output jalur dari EGO Planner |
 | **Setpoint** | `/mavros/setpoint_raw/local` | `mavros_msgs/PositionTarget` | Perintah final ke Flight Controller |
 
 ### TF Coordinate Hierarchy
