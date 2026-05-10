@@ -4117,15 +4117,6 @@ class Game:
         rospy.sleep(1)
         rospy.loginfo("[MISI] Takeoff selesai, mulai EGO Planner")
 
-        # rostopic echo /mavros/local_position/odom | grep -A3 "position"     buat cek posisi
-        self.drone.navigate_ego(
-            goal_x=-5,
-            goal_y=0.2,
-            exit_alt=0.8,
-            timeout=10.0,
-            allow_yaw=False,
-        )
-
         # ## Payload search and pickup algorithm
         # rospy.loginfo("-- SEARCHING FOR PAYLOAD --")
         # rospy.wait_for_service('/vision/activate/target')
@@ -4149,18 +4140,46 @@ class Game:
         # for _ in range(30):
         #     self.drone.move_vel(0, 0, 0)
 
+
+        # # rostopic echo /mavros/local_position/odom | grep -A3 "position"     buat cek posisi
+
         self.drone.navigate_ego(
-            goal_x=-5.8,
-            goal_y=5,
+            goal_x=-1.23,
+            goal_y=0.0,
             exit_alt=0.8,
             timeout=10.0,
             allow_yaw=True,
         )
+
+        self.drone.navigate_ego(
+            goal_x=-5.2,
+            goal_y=0.0,
+            exit_alt=0.8,
+            timeout=10.0,
+            allow_yaw=True,
+        )
+
+        self.drone.navigate_ego(
+            goal_x=-5.2,
+            goal_y=4.7,
+            exit_alt=0.8,
+            timeout=120.0,
+            allow_yaw=True,
+        )
+
+        self.drone.navigate_ego(
+            goal_x=-5.2,
+            goal_y=8.0,
+            exit_alt=1.2,
+            timeout=120.0,
+            allow_yaw=True,
+        )
+
         self.drone.navigate_ego(
             goal_x=-5.6,
             goal_y=11.2,
-            exit_alt=1.8,
-            min_alt=1.5,
+            exit_alt=1.0,
+            min_alt=0.5,
             timeout=30.0,
             allow_yaw=True,
         )

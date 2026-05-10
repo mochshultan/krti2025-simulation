@@ -105,11 +105,14 @@
   </include>
 
   <node pkg="ego_planner" name="traj_server" type="traj_server" output="screen">
-    <remap from="/position_cmd" to="/drone_0_planning/pos_cmd"/>
-    <remap from="/odom_world" to="/$(arg odom_topic)"/>
-    <remap from="~planning/bspline" to="/drone_0_planning/bspline"/>
+    <param name="bspline_topic" value="/drone_0_planning/bspline"/>
+    <param name="pos_cmd_topic" value="/drone_0_planning/pos_cmd"/>
     <param name="traj_server/time_forward" value="1.0" type="double"/>
   </node>
+
+  <!-- DroneAPI subscribes to /planning/pos_cmd; advanced_param swarm naming uses /drone_0_planning/pos_cmd -->
+  <node pkg="topic_tools" type="relay" name="ego_pos_cmd_relay"
+        args="/drone_0_planning/pos_cmd /planning/pos_cmd"/>
 
   <node pkg="waypoint_generator" name="waypoint_generator"
         type="waypoint_generator" output="screen">

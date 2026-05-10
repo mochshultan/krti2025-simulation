@@ -1,64 +1,69 @@
 <launch>
-  <!-- Main simulation bringup for KRTI 2025 -->
+  <!-- KRTI 2025 Gazebo + MAVROS + VINS + single-agent EGO-Planner (robot_id = 0) -->
   <arg name="drone_id" default="0"/>
-  
-  <!-- Environment Variables for Gazebo -->
+  <arg name="odom_topic" default="/mavros/local_position/odom"/>
+  <arg name="depth_topic" default="/iris/iris/front_camera/depth/image_raw"/>
+  <arg name="cloud_topic" default="/ego_planner/depth_cloud_world"/>
+  <arg name="camera_pose_topic" default="/camera_pose"/>
+
   <env name="GAZEBO_MODEL_PATH" value="$(env GAZEBO_MODEL_PATH):$(find krti2023)/models"/>
   <env name="GAZEBO_RESOURCE_PATH" value="$(env GAZEBO_RESOURCE_PATH):$(find krti2023)/models"/>
 
-  <!-- 1. Gazebo Only (Arena) -->
-  <include file="$(find krti2023)/launch/gazebo_only.launch">
-  </include>
-
-  <!-- 2. MAVROS Only (Connection to SITL) -->
+  <include file="$(find krti2023)/launch/gazebo_only.launch"/>
   <include file="$(find krti2023)/launch/mavros_only.launch"/>
 
-  <!-- 3. Static TF Hierarchy (Root: world) -->
+  <!-- TF: world is root (Gazebo); map/odom aligned for MAVROS local EKF -->
   <node pkg="tf2_ros" type="static_transform_publisher" name="world_to_map" args="0 0 0 0 0 0 world map"/>
   <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_odom" args="0 0 0 0 0 0 map odom"/>
-  <!-- Camera link TF based on drone/model.sdf joint pose -->
-  <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_camera" args="0.1 0 0.05 0 0 0 base_link depth_camera_link"/>
+  <!-- Gazebo depth plugin uses frame depth_camera_link (see krti2023 drone model.sdf) -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_depth_camera"
+        args="0.1 0 0.05 0 0 0 base_link depth_camera_link"/>
 
-  <!-- 4. VINS-Fusion (VIO) -->
+  <!-- MAVROS apm_config disables local_position/tf/send; ego needs TF for depth cloud -> world -->
+  <node pkg="ego_planner" type="ego_odom_tf_broadcaster.py" name="ego_odom_tf_broadcaster" output="screen">
+    <param name="odom" value="$(arg odom_topic)"/>
+  </node>
+
+  <!-- VINS-Fusion + bridge into MAVROS (optional VIO) -->
   <group ns="vins_estimator">
     <node pkg="vins" type="vins_node" name="vins_estimator" output="screen">
       <param name="config_file" value="$(find vins)/../config/krti2025/krti_vins_config.yaml"/>
       <param name="vins_folder" value="$(find vins)/../config/krti2025/"/>
     </node>
-    <!-- Bridge VINS to MAVROS -->
     <node pkg="krti2024_pi" type="vins_to_mavros.py" name="vins_bridge" output="screen">
       <param name="odom_topic" value="/vins_estimator/odometry"/>
       <param name="frame_id" value="world"/>
     </node>
   </group>
 
-  <!-- 5. EGO Planner Swarm -->
-  <arg name="odom_topic" value="/mavros/local_position/odom"/>
-  <arg name="depth_topic" value="/iris/front_camera/depth/image_raw"/>
-  <arg name="cloud_topic" value="/iris/front_camera/depth/points"/>
-  <arg name="camera_pose_topic" value="/iris/front_camera/depth/pose"/>
-  
-  <include file="$(find ego_planner)/launch/advanced_param.xml">
+  <!-- Depth PointCloud2 (camera frame) -> world frame for ego grid_map/cloud -->
+  <node pkg="ego_planner" type="depth_cloud_to_world.py" name="depth_cloud_to_world" output="screen">
+    <param name="input" value="/iris/iris/front_camera/depth/points"/>
+    <param name="output" value="/ego_planner/depth_cloud_world"/>
+    <param name="target_frame" value="world"/>
+  </node>
+
+  <include file="$(find ego_planner)/launch/advanced_param_single.xml">
     <arg name="map_size_x_" value="40.0"/>
     <arg name="map_size_y_" value="40.0"/>
-    <arg name="map_size_z_" value="10.0"/>
+    <arg name="map_size_z_" value="3.0"/>
     <arg name="drone_id" value="$(arg drone_id)"/>
-    <arg name="topic_prefix" value=""/> <!-- No prefix, use global remapping -->
-    
+
     <arg name="odometry_topic" value="$(arg odom_topic)"/>
     <arg name="depth_topic" value="$(arg depth_topic)"/>
     <arg name="cloud_topic" value="$(arg cloud_topic)"/>
     <arg name="camera_pose_topic" value="$(arg camera_pose_topic)"/>
-    
+
+    <!-- 320x240, HFOV 1.047 rad (iris front_camera in model.sdf) -->
     <arg name="cx" value="160.0"/>
     <arg name="cy" value="120.0"/>
-    <arg name="fx" value="387.229"/>
-    <arg name="fy" value="387.229"/>
-    
-    <arg name="max_vel" value="1.0"/>
-    <arg name="max_acc" value="1.5"/>
-    <arg name="planning_horizon" value="7.5"/>
-    <arg name="flight_type" value="1"/> <!-- 1: Manual Goal via /move_base_simple/goal -->
+    <arg name="fx" value="277.128"/>
+    <arg name="fy" value="277.128"/>
+
+    <arg name="max_vel" value="0.65"/>
+    <arg name="max_acc" value="1.2"/>
+    <arg name="planning_horizon" value="5.5"/>
+    <arg name="flight_type" value="1"/>
     <arg name="use_distinctive_trajs" value="false"/>
     <arg name="point_num" value="1"/>
     <arg name="point0_x" value="0.0"/>
@@ -79,12 +84,12 @@
     <arg name="obj_num_set" value="1"/>
   </include>
 
-  <!-- 6. Trajectory Server (Execution Bridge) -->
-  <node pkg="ego_planner" name="drone_$(arg drone_id)_traj_server" type="traj_server" output="screen">
-    <remap from="/odom_world" to="$(arg odom_topic)"/>
-    <remap from="~planning/bspline" to="/drone_$(arg drone_id)_planning/bspline"/>
-    <remap from="/position_cmd" to="/drone_$(arg drone_id)_planning/pos_cmd"/>
-    <param name="traj_server/time_forward" value="1.0" type="double"/>
+  <node pkg="ego_planner" name="traj_server" type="traj_server" output="screen">
+    <param name="bspline_topic" value="/planning/bspline"/>
+    <param name="pos_cmd_topic" value="/planning/pos_cmd"/>
+    <param name="traj_server/time_forward" value="1.25" type="double"/>
+    <param name="traj_server/yaw_dot_max" value="0.85" type="double"/>
+    <param name="traj_server/yaw_lpf_weight" value="0.62" type="double"/>
   </node>
 
 </launch>
